@@ -21,7 +21,7 @@
       width: 100vw; 
       height: 100dvh; 
       overflow: hidden; 
-      z-index: 99999; /* Higher than AR scene to cover the camera feed initially */
+      z-index: 99999;
       background: url('bg-home.png') no-repeat center center;
       background-size: cover;
       opacity: 1;
@@ -55,7 +55,7 @@
       transform: scale(0.95);
     }
 
-    /* CRITICAL FIX: Forces the landing view completely out of existence so camera can render */
+    /* Forces the landing view completely out of existence so camera can render */
     #premium-landing-view.hide-me {
       display: none !important;
       opacity: 0 !important;
@@ -63,7 +63,6 @@
       z-index: -1000 !important;
     }
 
-    /* Forces the A-Frame canvas elements to stay positioned cleanly */
     .a-canvas {
       position: absolute !important;
       top: 0 !important;
@@ -88,8 +87,16 @@
            vr-mode-ui="enabled: false" 
            device-orientation-permission-ui="enabled: false">
     
+    <a-assets>
+      <video id="sticker-video" src="bhaw.mp4" preload="auto" loop="true" playsinline webkit-playsinline></video>
+    </a-assets>
+
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-    <a-entity mindar-image-target="targetIndex: 0"></a-entity>
+
+    <a-entity mindar-image-target="targetIndex: 0" id="target-handler">
+      <a-video src="#sticker-video" width="1" height="0.5625" position="0 0 0" rotation="0 0 0"></a-video>
+    </a-entity>
+
   </a-scene>
 
   <script>
@@ -97,18 +104,31 @@
       const startBtn = document.getElementById('start-camera-btn');
       const landingScreen = document.getElementById('premium-landing-view');
       const arScene = document.querySelector('a-scene');
+      const stickerVid = document.getElementById('sticker-video');
+      const targetHandler = document.getElementById('target-handler');
 
       startBtn.addEventListener('click', (event) => {
         event.stopPropagation();
         event.preventDefault();
 
-        // 1. Force drop the visual curtain using multiple safety properties
+        // Remove the visual homepage curtain overlay
         landingScreen.classList.add('hide-me');
 
-        // 2. Launch the running tracking engine framework natively
+        // Fire the core camera stream natively
         if (arScene && arScene.systems['mindar-image-system']) {
           arScene.systems['mindar-image-system'].start();
         }
+      });
+
+      // Video Controls: Play only when target sticker is seen, pause when lost
+      targetHandler.addEventListener("targetFound", () => {
+        console.log("Sticker found! Playing video...");
+        stickerVid.play().catch(err => console.log("Video playback waiting:", err));
+      });
+
+      targetHandler.addEventListener("targetLost", () => {
+        console.log("Sticker lost. Pausing video.");
+        stickerVid.pause();
       });
     });
   </script>
