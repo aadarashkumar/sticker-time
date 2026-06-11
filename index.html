@@ -10,10 +10,10 @@
 
   <style>
     body, html {
-      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #05081c;
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: transparent !important;
     }
 
-    /* Fixed Landing Screen Layer */
+    /* Fixed Landing Screen UI Layer Layout */
     #premium-landing-view {
       position: fixed; 
       top: 0; 
@@ -21,10 +21,12 @@
       width: 100vw; 
       height: 100dvh; 
       overflow: hidden; 
-      z-index: 99999; /* Higher than AR scene to cover it at start */
+      z-index: 99999; /* Higher than AR scene to cover the camera feed initially */
       background: url('bg-home.png') no-repeat center center;
       background-size: cover;
-      transition: opacity 0.3s ease, visibility 0.3s ease;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
     }
 
     #interactive-overlay-plane {
@@ -32,7 +34,6 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box;
     }
 
-    /* Customized Graphic Touch Button Target */
     #start-camera-btn {
       background: url('btn-bubble.png') no-repeat center !important;
       background-size: contain !important;
@@ -54,11 +55,22 @@
       transform: scale(0.95);
     }
 
-    /* Slick fade transition away */
+    /* CRITICAL FIX: Forces the landing view completely out of existence so camera can render */
     #premium-landing-view.hide-me {
+      display: none !important;
       opacity: 0 !important;
       visibility: hidden !important;
-      pointer-events: none !important;
+      z-index: -1000 !important;
+    }
+
+    /* Forces the A-Frame canvas elements to stay positioned cleanly */
+    .a-canvas {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      z-index: 1 !important;
     }
   </style>
 </head>
@@ -70,14 +82,13 @@
     </div>
   </div>
 
-  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no" 
+  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;" 
            color-space="sRGB" 
            renderer="colorManagement: true, physicallyCorrectLights: false" 
            vr-mode-ui="enabled: false" 
            device-orientation-permission-ui="enabled: false">
     
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-    
     <a-entity mindar-image-target="targetIndex: 0"></a-entity>
   </a-scene>
 
@@ -87,15 +98,14 @@
       const landingScreen = document.getElementById('premium-landing-view');
       const arScene = document.querySelector('a-scene');
 
-      // The exact millisecond the user touches the button, we trigger the camera immediately
       startBtn.addEventListener('click', (event) => {
         event.stopPropagation();
         event.preventDefault();
 
-        // Drop the landing screen curtain instantly
+        // 1. Force drop the visual curtain using multiple safety properties
         landingScreen.classList.add('hide-me');
 
-        // Start the camera hardware stream directly via the framework's native hook
+        // 2. Launch the running tracking engine framework natively
         if (arScene && arScene.systems['mindar-image-system']) {
           arScene.systems['mindar-image-system'].start();
         }
