@@ -66,14 +66,14 @@
     </div>
   </div>
 
-  <a-scene mindar-image="imageTargetSrc: targets.mind?v=1; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;" 
+  <a-scene id="ar-scene-root"
            color-space="sRGB" 
            renderer="colorManagement: true, physicallyCorrectLights: false" 
            vr-mode-ui="enabled: false" 
            device-orientation-permission-ui="enabled: false">
     
     <a-assets>
-      <video id="sticker-video" src="bhaw.mp4?v=1" preload="auto" loop playsinline webkit-playsinline muted></video>
+      <video id="sticker-video" src="bhaw.mp4" preload="auto" loop playsinline webkit-playsinline muted></video>
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -88,45 +88,6 @@
     document.addEventListener("DOMContentLoaded", () => {
       const startBtn = document.getElementById('start-camera-btn');
       const landingScreen = document.getElementById('premium-landing-view');
-      const arScene = document.querySelector('a-scene');
+      const arScene = document.getElementById('ar-scene-root');
       const stickerVid = document.getElementById('sticker-video');
       const targetHandler = document.getElementById('target-handler');
-
-      startBtn.addEventListener('click', async () => {
-        // Drop landing screen curtain instantly
-        landingScreen.classList.add('hide-me');
-
-        // FORCE TRIGGER: Request camera hardware natively via raw Javascript BEFORE starting the scene tracker engine loop.
-        // This manually bypasses the silent security block inside Safari!
-        try {
-          const streamCheck = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-          streamCheck.getTracks().forEach(track => track.stop());
-        } catch (e) {
-          console.log("Native hardware handshake fallback triggered.");
-        }
-
-        // Unblock audio context tracking for background video layers
-        try {
-          stickerVid.play().then(() => { stickerVid.pause(); });
-        } catch(e){}
-
-        // Boot stable image target scanning pipelines directly
-        if (arScene && arScene.systems['mindar-image-system']) {
-          arScene.systems['mindar-image-system'].start();
-        }
-      });
-
-      // Automation logic rule mapping
-      targetHandler.addEventListener("targetFound", () => {
-        stickerVid.muted = false;
-        stickerVid.play().catch(err => console.log(err));
-      });
-
-      targetHandler.addEventListener("targetLost", () => {
-        stickerVid.pause();
-      });
-    });
-  </script>
-
-</body>
-</html>
