@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Sticker Time AR</title>
 
-  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
     body, html {
       margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #05081c;
     }
 
-    /* Absolute Root Landing Screen View Overlay */
+    /* Fixed Landing Screen Layer */
     #premium-landing-view {
       position: fixed; 
       top: 0; 
@@ -21,9 +21,10 @@
       width: 100vw; 
       height: 100dvh; 
       overflow: hidden; 
-      z-index: 99999; /* Forces interface to completely blanket the screen */
+      z-index: 99999; /* Higher than AR scene to cover it at start */
       background: url('bg-home.png') no-repeat center center;
       background-size: cover;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
     #interactive-overlay-plane {
@@ -52,6 +53,13 @@
     #start-camera-btn:active {
       transform: scale(0.95);
     }
+
+    /* Slick fade transition away */
+    #premium-landing-view.hide-me {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
   </style>
 </head>
 <body>
@@ -62,13 +70,13 @@
     </div>
   </div>
 
-  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no;" 
+  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no" 
            color-space="sRGB" 
-           renderer="colorManagement: true, physicallyCorrectLights" 
+           renderer="colorManagement: true, physicallyCorrectLights: false" 
            vr-mode-ui="enabled: false" 
            device-orientation-permission-ui="enabled: false">
     
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-controls></a-camera>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
     
     <a-entity mindar-image-target="targetIndex: 0"></a-entity>
   </a-scene>
@@ -77,28 +85,19 @@
     document.addEventListener("DOMContentLoaded", () => {
       const startBtn = document.getElementById('start-camera-btn');
       const landingScreen = document.getElementById('premium-landing-view');
+      const arScene = document.querySelector('a-scene');
 
-      startBtn.addEventListener('click', async (event) => {
+      // The exact millisecond the user touches the button, we trigger the camera immediately
+      startBtn.addEventListener('click', (event) => {
         event.stopPropagation();
         event.preventDefault();
 
-        // Step A: Safely eliminate the landing overlay from memory entirely
-        landingScreen.remove();
+        // Drop the landing screen curtain instantly
+        landingScreen.classList.add('hide-me');
 
-        // Step B: Target the underlying A-Frame scene architecture
-        const arScene = document.querySelector('a-scene');
+        // Start the camera hardware stream directly via the framework's native hook
         if (arScene && arScene.systems['mindar-image-system']) {
-          try {
-            // Step C: Trigger native hardware browser permission framework cleanly
-            await navigator.mediaDevices.getUserMedia({ video: true });
-            
-            // Step D: Spin up the running MindAR tracking loop
-            arScene.systems['mindar-image-system'].start();
-            console.log("AR Engine successfully deployed.");
-          } catch (cameraError) {
-            console.warn("Direct permission prompt bypassed, triggering engine fallback:", cameraError);
-            arScene.systems['mindar-image-system'].start();
-          }
+          arScene.systems['mindar-image-system'].start();
         }
       });
     });
