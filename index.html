@@ -5,17 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Sticker Time AR</title>
 
-  <!-- Clean, Stable Core Engine Stack -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    /* Ensured background transparency allows direct camera stream pass-through */
+    /* CRITICAL VENDOR HYPER-RESET: Forces absolute canvas transparency across iOS Safari layouts */
     body, html {
-      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: transparent !important;
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: transparent !important;
     }
 
-    /* Fixed Landing Screen UI Layer Layout - Safely Isolated from A-Frame Scene */
+    /* Fixed UI Homepage Cover Layer */
     #premium-landing-view {
       position: fixed; 
       top: 0; 
@@ -26,9 +25,6 @@
       z-index: 99999;
       background: #05081c url('bg-home.png') no-repeat center center;
       background-size: cover;
-      opacity: 1;
-      visibility: visible;
-      transition: opacity 0.3s ease;
     }
 
     #interactive-overlay-plane {
@@ -57,7 +53,7 @@
       transform: scale(0.95);
     }
 
-    /* Completely detaches the homepage block elements from the layout tree */
+    /* Hard destruction of the homepage DOM elements to uncover the underlying video feed */
     #premium-landing-view.hide-me {
       display: none !important;
       opacity: 0 !important;
@@ -65,6 +61,7 @@
       z-index: -1000 !important;
     }
 
+    /* Standardizes A-Frame video canvas elements to render as flat backgrounds */
     .a-canvas {
       position: absolute !important;
       top: 0 !important;
@@ -77,16 +74,14 @@
 </head>
 <body>
 
-  <!-- 1. USER INTERFACE HOMEPAGE COVER LAYER -->
   <div id="premium-landing-view">
     <div id="interactive-overlay-plane">
       <button id="start-camera-btn"></button>
     </div>
   </div>
 
-  <!-- 2. AR STREAM AND RENDERING WORLD ENGINE -->
-  <!-- Correctly passes standard string tokens to bypass the blue loading view layer -->
   <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;" 
+           embedded
            color-space="sRGB" 
            renderer="colorManagement: true, physicallyCorrectLights: false" 
            vr-mode-ui="enabled: false" 
@@ -98,15 +93,12 @@
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- THE TRACKING TARGET HOOK MAP -->
     <a-entity mindar-image-target="targetIndex: 0" id="target-handler">
-      <!-- CALIBRATED WIDE RECTANGLE RATIO SCALE -->
       <a-video src="#sticker-video" width="1.6" height="0.75" position="0 0 0" rotation="0 0 0"></a-video>
     </a-entity>
 
   </a-scene>
 
-  <!-- 3. RUNTIME APP LOGIC PIPELINE -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const startBtn = document.getElementById('start-camera-btn');
@@ -119,42 +111,43 @@
         event.stopPropagation();
         event.preventDefault();
 
-        // Step A: Drop the home screen layer out of memory instantly
+        // 1. Immediately drop the home screen curtain
         landingScreen.classList.add('hide-me');
 
-        // Step B: Direct HTML5 camera trigger to force request browser permissions prompt instantly
+        // 2. Direct clean user-gesture stream link to guarantee permission prompt triggers smoothly
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-          // Stop template stream immediately; the tracking engine will take over cleanly
           stream.getTracks().forEach(track => track.stop());
         } catch (mediaErr) {
-          console.log("Direct permissions prompt bypassed or previously accepted:", mediaErr);
+          console.log("Permissions verification trace:", mediaErr);
         }
 
-        // Step C: Wake background audio tracking thread cleanly for iOS
+        // 3. Unblock video core engine thread for mobile autoplay policies
         try {
           stickerVid.play().then(() => {
             stickerVid.pause();
-          }).catch(e => console.log("Video wake pass"));
+          }).catch(e => console.log("Video bootstrap skip"));
         } catch(err) {}
 
-        // Step D: Start tracking hardware system directly
+        // 4. Force initialize the live hardware device environment camera feed
         if (arScene && arScene.systems['mindar-image-system']) {
           try {
             arScene.systems['mindar-image-system'].start();
           } catch(arErr) {
-            console.error("Tracking engine startup exception:", arErr);
+            console.error("Core Engine boot panic:", arErr);
           }
         }
       });
 
-      // Target Tracking Automation Rules
+      // Target Tracking State Listeners
       targetHandler.addEventListener("targetFound", () => {
+        console.log("Target tracking lock acquired!");
         stickerVid.muted = false; 
-        stickerVid.play().catch(err => console.log("Video execution delay:", err));
+        stickerVid.play().catch(err => console.log("Media playback interaction lag:", err));
       });
 
       targetHandler.addEventListener("targetLost", () => {
+        console.log("Target tracking sight dropped.");
         stickerVid.pause();
       });
     });
