@@ -55,7 +55,7 @@
       transform: scale(0.95);
     }
 
-    /* Forces the landing view completely out of existence so camera can render */
+    /* Forces the landing homepage view completely out of existence once activated */
     #premium-landing-view.hide-me {
       display: none !important;
       opacity: 0 !important;
@@ -63,6 +63,7 @@
       z-index: -1000 !important;
     }
 
+    /* Keeps A-Frame rendering canvas perfectly framed over the screen view */
     .a-canvas {
       position: absolute !important;
       top: 0 !important;
@@ -88,13 +89,13 @@
            device-orientation-permission-ui="enabled: false">
     
     <a-assets>
-      <video id="sticker-video" src="bhaw.mp4" preload="auto" loop="true" playsinline webkit-playsinline></video>
+      <video id="sticker-video" src="bhaw.mp4" preload="auto" loop playsinline webkit-playsinline muted></video>
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
     <a-entity mindar-image-target="targetIndex: 0" id="target-handler">
-      <a-video src="#sticker-video" width="1" height="0.5625" position="0 0 0" rotation="0 0 0"></a-video>
+      <a-video src="#sticker-video" width="1.6" height="0.75" position="0 0 0" rotation="0 0 0"></a-video>
     </a-entity>
 
   </a-scene>
@@ -111,27 +112,22 @@
         event.stopPropagation();
         event.preventDefault();
 
-        // Remove the visual homepage curtain overlay
+        // Step A: Immediately hide the landing panel image layout out of view
         landingScreen.classList.add('hide-me');
 
-        // Fire the core camera stream natively
+        // Step B: Native hardware prompt safety wake trigger for iOS audio loops
+        stickerVid.play().then(() => {
+          stickerVid.pause(); // Sleep it on frame 1 instantly until image matches
+        }).catch(err => console.log("Video preload system bypassed", err));
+
+        // Step C: Initialize physical device back camera streaming frames
         if (arScene && arScene.systems['mindar-image-system']) {
           arScene.systems['mindar-image-system'].start();
         }
       });
 
-      // Video Controls: Play only when target sticker is seen, pause when lost
+      // Step D: Playback automation control tracks based on tracking lock conditions
       targetHandler.addEventListener("targetFound", () => {
-        console.log("Sticker found! Playing video...");
-        stickerVid.play().catch(err => console.log("Video playback waiting:", err));
-      });
-
-      targetHandler.addEventListener("targetLost", () => {
-        console.log("Sticker lost. Pausing video.");
-        stickerVid.pause();
-      });
-    });
-  </script>
-
-</body>
-</html>
+        console.log("Sticker target match detected. Booting projection...");
+        stickerVid.muted = false; // Turn on audio tracking sound dynamically when seen
+        stickerVid
