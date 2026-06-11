@@ -10,7 +10,7 @@
 
   <style>
     body, html {
-      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: transparent !important;
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #05081c !important;
     }
 
     /* Fixed Landing Screen UI Layer Layout */
@@ -22,11 +22,11 @@
       height: 100dvh; 
       overflow: hidden; 
       z-index: 99999;
-      background: url('bg-home.png') no-repeat center center;
+      background: #05081c url('bg-home.png') no-repeat center center;
       background-size: cover;
       opacity: 1;
       visibility: visible;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
+      transition: opacity 0.3s ease;
     }
 
     #interactive-overlay-plane {
@@ -112,22 +112,39 @@
         event.stopPropagation();
         event.preventDefault();
 
-        // Step A: Immediately hide the landing panel image layout out of view
+        // Safety Feature: Drop the homepage layer instantly regardless of any media loading lag
         landingScreen.classList.add('hide-me');
 
-        // Step B: Native hardware prompt safety wake trigger for iOS audio loops
-        stickerVid.play().then(() => {
-          stickerVid.pause(); // Sleep it on frame 1 instantly until image matches
-        }).catch(err => console.log("Video preload system bypassed", err));
+        // Quietly activate the video backend pipeline
+        try {
+          stickerVid.play().then(() => {
+            stickerVid.pause();
+          }).catch(e => console.log("Video track unblock skipped"));
+        } catch(err) {
+          console.log("Media system bypass");
+        }
 
-        // Step C: Initialize physical device back camera streaming frames
+        // Fire the core hardware camera stream natively
         if (arScene && arScene.systems['mindar-image-system']) {
-          arScene.systems['mindar-image-system'].start();
+          try {
+            arScene.systems['mindar-image-system'].start();
+          } catch(arErr) {
+            console.error("Camera startup error:", arErr);
+          }
         }
       });
 
-      // Step D: Playback automation control tracks based on tracking lock conditions
+      // Target Tracking Automation Control Flow
       targetHandler.addEventListener("targetFound", () => {
-        console.log("Sticker target match detected. Booting projection...");
-        stickerVid.muted = false; // Turn on audio tracking sound dynamically when seen
-        stickerVid
+        stickerVid.muted = false; 
+        stickerVid.play().catch(err => console.log("Playback lag handler:", err));
+      });
+
+      targetHandler.addEventListener("targetLost", () => {
+        stickerVid.pause();
+      });
+    });
+  </script>
+
+</body>
+</html>
