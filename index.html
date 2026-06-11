@@ -10,7 +10,7 @@
 
   <style>
     body, html {
-      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: transparent !important;
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #05081c !important;
     }
 
     /* Fixed Landing Screen UI Layer Layout */
@@ -22,11 +22,10 @@
       height: 100dvh; 
       overflow: hidden; 
       z-index: 99999;
-      background: url('bg-home.png') no-repeat center center;
+      background: #05081c url('bg-home.png') no-repeat center center;
       background-size: cover;
       opacity: 1;
       visibility: visible;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
     }
 
     #interactive-overlay-plane {
@@ -55,7 +54,7 @@
       transform: scale(0.95);
     }
 
-    /* Forces the landing view completely out of existence so camera can render */
+    /* Instantly drops the overlay element completely out of the layout ecosystem */
     #premium-landing-view.hide-me {
       display: none !important;
       opacity: 0 !important;
@@ -81,7 +80,7 @@
     </div>
   </div>
 
-  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: yes;" 
+  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: false; uiError: false; uiScanning: false;" 
            color-space="sRGB" 
            renderer="colorManagement: true, physicallyCorrectLights: false" 
            vr-mode-ui="enabled: false" 
@@ -94,7 +93,7 @@
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
     <a-entity mindar-image-target="targetIndex: 0" id="target-handler">
-      <a-video src="#sticker-video" width="1" height="1" position="0 0 0" rotation="0 0 0"></a-video>
+      <a-video src="#sticker-video" width="1.6" height="0.75" position="0 0 0" rotation="0 0 0"></a-video>
     </a-entity>
 
   </a-scene>
@@ -111,29 +110,29 @@
         event.stopPropagation();
         event.preventDefault();
 
-        // Remove the homepage visual overlay curtain
+        // 1. Instantly tear down the homepage layer out of memory
         landingScreen.classList.add('hide-me');
 
-        // FORCE ACTIVATE VIDEO ENGINE: Pre-loads the video background thread safely via human tap link
-        stickerVid.play().then(() => {
-          stickerVid.pause(); // Pause it instantly until the sticker is tracked!
-        }).catch(err => console.log("Video setup bypass", err));
+        // 2. Unfreeze audio contexts for background media execution
+        try {
+          stickerVid.play().then(() => {
+            stickerVid.pause();
+          }).catch(e => console.log("Media system bypass"));
+        } catch(err) {}
 
-        // Fire the core camera stream natively
+        // 3. Fire the physical device back camera streaming frames directly
         if (arScene && arScene.systems['mindar-image-system']) {
           arScene.systems['mindar-image-system'].start();
         }
       });
 
-      // Handle video loop playback on target scanning states
+      // Target Tracking Automation Rules
       targetHandler.addEventListener("targetFound", () => {
-        console.log("Sticker matched successfully!");
-        stickerVid.muted = false; // Unmute the audio track when seen
-        stickerVid.play().catch(err => console.log("Playback delay error:", err));
+        stickerVid.muted = false; 
+        stickerVid.play().catch(err => console.log("Playback interaction delay:", err));
       });
 
       targetHandler.addEventListener("targetLost", () => {
-        console.log("Sticker target lost.");
         stickerVid.pause();
       });
     });
