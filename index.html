@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Sticker Time AR</title>
+
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #05081c;
+    }
+
+    /* Absolute Root Landing Screen View Overlay */
+    #premium-landing-view {
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100vw; 
+      height: 100dvh; 
+      overflow: hidden; 
+      z-index: 99999; /* Forces interface to completely blanket the screen */
+      background: url('bg-home.png') no-repeat center center;
+      background-size: cover;
+    }
+
+    #interactive-overlay-plane {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box;
+    }
+
+    /* Customized Graphic Touch Button Target */
+    #start-camera-btn {
+      background: url('btn-bubble.png') no-repeat center !important;
+      background-size: contain !important;
+      border: none !important;
+      width: 280px !important; 
+      height: 75px !important;
+      cursor: pointer;
+      margin-top: auto; 
+      margin-bottom: 110px; 
+      transition: transform 0.1s ease;
+      background-color: transparent !important;
+      outline: none !important;
+      -webkit-tap-highlight-color: transparent;
+      color: transparent !important;
+      font-size: 0px !important;
+    }
+
+    #start-camera-btn:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="premium-landing-view">
+    <div id="interactive-overlay-plane">
+      <button id="start-camera-btn"></button>
+    </div>
+  </div>
+
+  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no;" 
+           color-space="sRGB" 
+           renderer="colorManagement: true, physicallyCorrectLights" 
+           vr-mode-ui="enabled: false" 
+           device-orientation-permission-ui="enabled: false">
+    
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-controls></a-camera>
+    
+    <a-entity mindar-image-target="targetIndex: 0"></a-entity>
+  </a-scene>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const startBtn = document.getElementById('start-camera-btn');
+      const landingScreen = document.getElementById('premium-landing-view');
+
+      startBtn.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+
+        // Step A: Safely eliminate the landing overlay from memory entirely
+        landingScreen.remove();
+
+        // Step B: Target the underlying A-Frame scene architecture
+        const arScene = document.querySelector('a-scene');
+        if (arScene && arScene.systems['mindar-image-system']) {
+          try {
+            // Step C: Trigger native hardware browser permission framework cleanly
+            await navigator.mediaDevices.getUserMedia({ video: true });
+            
+            // Step D: Spin up the running MindAR tracking loop
+            arScene.systems['mindar-image-system'].start();
+            console.log("AR Engine successfully deployed.");
+          } catch (cameraError) {
+            console.warn("Direct permission prompt bypassed, triggering engine fallback:", cameraError);
+            arScene.systems['mindar-image-system'].start();
+          }
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
