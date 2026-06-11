@@ -9,9 +9,14 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    /* CRITICAL VENDOR HYPER-RESET: Forces absolute canvas transparency across iOS Safari layouts */
+    /* MASTER TRANSPARENCY OVERRIDE: Destroys the A-Frame solid white layer bug permanently */
+    body, html, a-scene, .a-canvas {
+      background-color: transparent !important;
+      background: transparent !important;
+    }
+    
     body, html {
-      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: transparent !important;
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     }
 
     /* Fixed UI Homepage Cover Layer */
@@ -53,7 +58,7 @@
       transform: scale(0.95);
     }
 
-    /* Hard destruction of the homepage DOM elements to uncover the underlying video feed */
+    /* Completely pulls the homepage structure out of the layout hierarchy */
     #premium-landing-view.hide-me {
       display: none !important;
       opacity: 0 !important;
@@ -61,7 +66,6 @@
       z-index: -1000 !important;
     }
 
-    /* Standardizes A-Frame video canvas elements to render as flat backgrounds */
     .a-canvas {
       position: absolute !important;
       top: 0 !important;
@@ -69,6 +73,18 @@
       width: 100% !important;
       height: 100% !important;
       z-index: 1 !important;
+    }
+    
+    /* Forces the camera video element running underneath to come forward */
+    video.mindar-image-video {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      z-index: -1 !important;
+      display: block !important;
     }
   </style>
 </head>
@@ -82,76 +98,8 @@
 
   <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;" 
            embedded
-           color-space="sRGB" 
-           renderer="colorManagement: true, physicallyCorrectLights: false" 
-           vr-mode-ui="enabled: false" 
-           device-orientation-permission-ui="enabled: false">
+           device-orientation-permission-ui="enabled: false"
+           vr-mode-ui="enabled: false">
     
     <a-assets>
-      <video id="sticker-video" src="bhaw.mp4" preload="auto" loop playsinline webkit-playsinline muted></video>
-    </a-assets>
-
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-    <a-entity mindar-image-target="targetIndex: 0" id="target-handler">
-      <a-video src="#sticker-video" width="1.6" height="0.75" position="0 0 0" rotation="0 0 0"></a-video>
-    </a-entity>
-
-  </a-scene>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const startBtn = document.getElementById('start-camera-btn');
-      const landingScreen = document.getElementById('premium-landing-view');
-      const arScene = document.querySelector('a-scene');
-      const stickerVid = document.getElementById('sticker-video');
-      const targetHandler = document.getElementById('target-handler');
-
-      startBtn.addEventListener('click', async (event) => {
-        event.stopPropagation();
-        event.preventDefault();
-
-        // 1. Immediately drop the home screen curtain
-        landingScreen.classList.add('hide-me');
-
-        // 2. Direct clean user-gesture stream link to guarantee permission prompt triggers smoothly
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-          stream.getTracks().forEach(track => track.stop());
-        } catch (mediaErr) {
-          console.log("Permissions verification trace:", mediaErr);
-        }
-
-        // 3. Unblock video core engine thread for mobile autoplay policies
-        try {
-          stickerVid.play().then(() => {
-            stickerVid.pause();
-          }).catch(e => console.log("Video bootstrap skip"));
-        } catch(err) {}
-
-        // 4. Force initialize the live hardware device environment camera feed
-        if (arScene && arScene.systems['mindar-image-system']) {
-          try {
-            arScene.systems['mindar-image-system'].start();
-          } catch(arErr) {
-            console.error("Core Engine boot panic:", arErr);
-          }
-        }
-      });
-
-      // Target Tracking State Listeners
-      targetHandler.addEventListener("targetFound", () => {
-        console.log("Target tracking lock acquired!");
-        stickerVid.muted = false; 
-        stickerVid.play().catch(err => console.log("Media playback interaction lag:", err));
-      });
-
-      targetHandler.addEventListener("targetLost", () => {
-        console.log("Target tracking sight dropped.");
-        stickerVid.pause();
-      });
-    });
-  </script>
-
-</body>
-</html>
+      <video id="sticker-video" src="
