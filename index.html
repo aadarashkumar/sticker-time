@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>AR Test</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.module.js"
+    }
+  }
+  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { width: 100vw; height: 100vh; overflow: hidden; background: #000; }
@@ -28,57 +35,18 @@
     try {
       log('Step 2: Importing MindAR...');
 
-      import('https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-three.prod.js')
-        .then(module => {
-          log('Step 3: MindAR loaded!');
-          const { MindARThree } = module;
+      const { MindARThree } = await import('https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-three.prod.js');
 
-          const mindarThree = new MindARThree({
-            container: document.getElementById('container'),
-            imageTargetSrc: 'targets.mind',
-          });
+      log('Step 3: MindAR loaded! Creating scene...');
 
-          log('Step 4: Setting up scene...');
-          const { renderer, scene, camera } = mindarThree;
+      const mindarThree = new MindARThree({
+        container: document.getElementById('container'),
+        imageTargetSrc: 'targets.mind',
+      });
 
-          const video = document.createElement('video');
-          video.src = 'bhaw.mp4';
-          video.loop = true;
-          video.muted = true;
-          video.setAttribute('playsinline', '');
-          video.setAttribute('webkit-playsinline', '');
+      const { renderer, scene, camera } = mindarThree;
 
-          const anchor = mindarThree.addAnchor(0);
-
-          anchor.onTargetFound = () => {
-            log('TARGET FOUND — playing!');
-            video.muted = false;
-            video.play();
-          };
-
-          anchor.onTargetLost = () => {
-            log('Target lost — point at sticker');
-            video.pause();
-          };
-
-          log('Step 5: Starting camera...');
-
-          mindarThree.start().then(() => {
-            log('Step 6: Camera running — point at sticker!');
-            renderer.setAnimationLoop(() => {
-              renderer.render(scene, camera);
-            });
-          }).catch(err => {
-            log('START ERROR: ' + err.message);
-          });
-        })
-        .catch(err => {
-          log('IMPORT ERROR: ' + err.message);
-        });
-
-    } catch(err) {
-      log('CATCH ERROR: ' + err.message);
-    }
-  </script>
-</body>
-</html>
+      const video = document.createElement('video');
+      video.src = 'bhaw.mp4';
+      video.loop = true;
+      video.muted = true;
