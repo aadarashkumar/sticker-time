@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>AR Sticker</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
+
+    a-scene { width: 100% !important; height: 100% !important; }
+
+    #back-btn {
+      position: fixed; top: 20px; left: 20px; z-index: 999;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      border: 1.5px solid rgba(255,255,255,0.3); border-radius: 50px;
+      color: #fff; font-size: 0.9rem; font-weight: 700;
+      padding: 9px 20px; cursor: pointer;
+      font-family: system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #scan-hint {
+      position: fixed; bottom: 40px; left: 50%;
+      transform: translateX(-50%); z-index: 999;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2); border-radius: 50px;
+      padding: 12px 24px; color: rgba(255,255,255,0.9);
+      font-size: 0.9rem; font-family: system-ui, sans-serif;
+      white-space: nowrap;
+    }
+    #scan-hint.hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <button id="back-btn" onclick="window.location.href='index.html'">← Back</button>
+  <div id="scan-hint">📷 Point at your sticker to play</div>
+
+  <a-scene
+    mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiLoading: yes; uiError: yes; uiScanning: yes;"
+    color-space="sRGB"
+    renderer="colorManagement: true; physicallyCorrectLights: false"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <video id="sticker-video"
+        src="bhaw.mp4"
+        preload="auto" loop
+        playsinline webkit-playsinline
+        muted crossorigin="anonymous">
+      </video>
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity mindar-image-target="targetIndex: 0" id="target-entity">
+      <a-video src="#sticker-video"
+        width="1" height="1"
+        position="0 0 0.001">
+      </a-video>
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    const video  = document.getElementById('sticker-video');
+    const target = document.getElementById('target-entity');
+    const hint   = document.getElementById('scan-hint');
+
+    target.addEventListener('targetFound', () => {
+      hint.classList.add('hidden');
+      video.muted = false;
+      video.play().catch(() => {
+        video.muted = true;
+        video.play().catch(e => console.warn('Play failed:', e));
+      });
+    });
+
+    target.addEventListener('targetLost', () => {
+      video.pause();
+      hint.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

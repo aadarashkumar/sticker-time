@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>It's Sticker Time</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
+
+    #landing {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-end;
+      padding-bottom: 18%;
+    }
+    #landing-bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+    }
+    #start-btn {
+      position: relative; z-index: 2;
+      background: none; border: none; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      padding: 0; width: min(320px, 82vw);
+    }
+    #start-btn img {
+      width: 100%; display: block;
+      filter: drop-shadow(0 0 18px rgba(96,165,250,0.7));
+      transition: transform 0.1s ease;
+    }
+    #start-btn:active img { transform: scale(0.93); }
+  </style>
+</head>
+<body>
+  <div id="landing">
+    <img id="landing-bg" src="bg-home.png" alt="">
+    <button id="start-btn" aria-label="Start Camera">
+      <img src="btn-bubble.png" alt="Start Camera">
+    </button>
+  </div>
+
+  <script>
+    document.getElementById('start-btn').addEventListener('click', () => {
+      window.location.href = 'ar.html';
+    });
+  </script>
+</body>
+</html>
