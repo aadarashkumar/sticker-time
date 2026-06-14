@@ -4,23 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>It's Sticker Time</title>
-
-  <!-- MindAR + A-Frame — loaded up front but AR scene is hidden until user taps -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image-aframe.prod.js"></script>
-
   <style>
-    /* ── Base ─────────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body, html {
       width: 100%; height: 100%;
       overflow: hidden;
       background: #000;
-      font-family: system-ui, sans-serif;
     }
 
-    /* ── LANDING SCREEN ───────────────────────────────────────────────── */
+    /* ── LANDING ── */
     #landing {
       position: fixed;
       inset: 0;
@@ -28,194 +23,63 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      padding: 48px 24px 36px;
-
-      /* Background image from your asset */
-      background-image: url('bg-home.png');
-      background-size: cover;
-      background-position: center;
-      background-color: #0a0a2e; /* fallback */
+      justify-content: flex-end;
+      padding-bottom: 44px;
     }
 
-    /* Decorative border frame */
-    #landing::before {
-      content: '';
+    /* Your background image fills the whole screen — no text drawn over it */
+    #landing-bg {
       position: absolute;
-      inset: 16px;
-      border: 1.5px solid rgba(255,255,255,0.18);
-      border-radius: 28px;
-      pointer-events: none;
-    }
-
-    /* Top area — hero text block */
-    .hero {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
+      inset: 0;
       width: 100%;
-      padding-top: 20px;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
     }
 
-    .hero-eyebrow {
-      font-style: italic;
-      font-size: 1.35rem;
-      color: #2de6c1;
-      letter-spacing: 0.01em;
-      margin-bottom: 2px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hero-eyebrow::before {
-      content: '+';
-      font-style: normal;
-      font-size: 1.5rem;
-      color: #2de6c1;
-    }
-
-    .hero-title {
-      font-size: clamp(3rem, 13vw, 4.2rem);
-      font-weight: 900;
-      line-height: 1;
-      color: #f7c21e;
-      text-shadow:
-        3px 3px 0 #7c3aed,
-        6px 6px 0 #3b1a7a,
-        0 0 32px rgba(247,194,30,0.35);
-      letter-spacing: -0.01em;
-      text-transform: uppercase;
-    }
-
-    /* Middle — scanning instructions */
-    .instructions {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      text-align: center;
-    }
-
-    .scan-icon {
-      width: 72px;
-      height: 72px;
-      border: 3px solid rgba(255,255,255,0.4);
-      border-radius: 16px;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .scan-icon::before, .scan-icon::after {
-      content: '';
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      border-color: #2de6c1;
-      border-style: solid;
-    }
-
-    .scan-icon::before {
-      top: -3px; left: -3px;
-      border-width: 3px 0 0 3px;
-      border-radius: 4px 0 0 0;
-    }
-
-    .scan-icon::after {
-      bottom: -3px; right: -3px;
-      border-width: 0 3px 3px 0;
-      border-radius: 0 0 4px 0;
-    }
-
-    .scan-inner {
-      width: 28px;
-      height: 3px;
-      background: rgba(255,255,255,0.5);
-      border-radius: 2px;
-      animation: scanline 2s ease-in-out infinite;
-      position: absolute;
-      top: 20px;
-    }
-
-    @keyframes scanline {
-      0%, 100% { top: 14px; opacity: 0.4; }
-      50% { top: 44px; opacity: 1; }
-    }
-
-    .instructions p {
-      color: rgba(255,255,255,0.75);
-      font-size: 0.9rem;
-      line-height: 1.5;
-      max-width: 240px;
-    }
-
-    /* Bottom — button + disclaimer */
-    .bottom-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      width: 100%;
-    }
-
-    /* START CAMERA button — uses your btn-bubble.png */
+    /* Button sits in the lower portion, on top of the background */
     #start-btn {
       position: relative;
-      width: min(320px, 85vw);
-      height: auto;
+      z-index: 2;
       background: none;
       border: none;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       padding: 0;
-      outline: none;
+      width: min(300px, 80vw);
     }
 
     #start-btn img {
       width: 100%;
       display: block;
-      filter: drop-shadow(0 0 18px rgba(96,165,250,0.6));
-      transition: transform 0.12s ease, filter 0.12s ease;
+      filter: drop-shadow(0 0 18px rgba(96,165,250,0.7));
+      transition: transform 0.1s ease;
     }
 
     #start-btn:active img {
-      transform: scale(0.94);
-      filter: drop-shadow(0 0 8px rgba(96,165,250,0.3));
+      transform: scale(0.93);
     }
 
-    .btn-label {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(1rem, 5vw, 1.3rem);
-      font-weight: 900;
-      color: #fff;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-      pointer-events: none;
-    }
-
+    /* Disclaimer also sits above bg */
     .disclaimer {
-      background: rgba(255,255,255,0.08);
+      position: relative;
+      z-index: 2;
+      margin-top: 14px;
+      background: rgba(20, 20, 60, 0.7);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 14px;
       padding: 10px 18px;
       text-align: center;
-      color: rgba(255,255,255,0.65);
+      color: rgba(255,255,255,0.7);
       font-size: 0.75rem;
-      line-height: 1.4;
-      max-width: 320px;
-      width: 100%;
+      line-height: 1.5;
+      width: min(300px, 80vw);
+      font-family: system-ui, sans-serif;
     }
 
-    /* ── LOADING SCREEN ───────────────────────────────────────────────── */
+    /* ── LOADING ── */
     #loader {
       position: fixed;
       inset: 0;
@@ -227,37 +91,32 @@
       justify-content: center;
       gap: 20px;
     }
-
     #loader.active { display: flex; }
 
     .loader-spinner {
-      width: 48px;
-      height: 48px;
+      width: 48px; height: 48px;
       border: 4px solid rgba(255,255,255,0.15);
       border-top-color: #2de6c1;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .loader-text {
       color: rgba(255,255,255,0.7);
       font-size: 0.95rem;
-      letter-spacing: 0.05em;
+      font-family: system-ui, sans-serif;
     }
 
-    /* ── AR SCENE ─────────────────────────────────────────────────────── */
+    /* ── AR SCENE ── */
     #ar-wrapper {
       position: fixed;
       inset: 0;
       z-index: 10;
       display: none;
     }
-
     #ar-wrapper.active { display: block; }
 
-    /* Make sure the a-scene and its canvas fill everything */
     a-scene {
       position: absolute !important;
       inset: 0 !important;
@@ -265,30 +124,28 @@
       height: 100% !important;
     }
 
-    /* ── BACK BUTTON (shown during AR) ───────────────────────────────── */
+    /* ── BACK BUTTON ── */
     #back-btn {
       position: fixed;
-      top: 20px;
-      left: 20px;
+      top: 20px; left: 20px;
       z-index: 200;
       display: none;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0,0,0,0.6);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
-      border: 1.5px solid rgba(255,255,255,0.25);
+      border: 1.5px solid rgba(255,255,255,0.3);
       border-radius: 50px;
       color: #fff;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       font-weight: 700;
-      padding: 8px 18px;
+      padding: 9px 20px;
       cursor: pointer;
+      font-family: system-ui, sans-serif;
       -webkit-tap-highlight-color: transparent;
-      letter-spacing: 0.04em;
     }
-
     #back-btn.active { display: block; }
 
-    /* ── SCANNING HINT (shown during AR waiting for target) ───────────── */
+    /* ── SCAN HINT ── */
     #scan-hint {
       position: fixed;
       bottom: 40px;
@@ -296,73 +153,46 @@
       transform: translateX(-50%);
       z-index: 200;
       display: none;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.65);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 14px;
-      padding: 12px 22px;
-      color: rgba(255,255,255,0.85);
-      font-size: 0.85rem;
-      text-align: center;
+      border-radius: 50px;
+      padding: 12px 24px;
+      color: rgba(255,255,255,0.9);
+      font-size: 0.9rem;
+      font-family: system-ui, sans-serif;
       white-space: nowrap;
     }
-
     #scan-hint.active { display: block; }
   </style>
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════════════════════════════════
-       LANDING SCREEN
-  ════════════════════════════════════════════════════════════════════ -->
+  <!-- LANDING: just your two images, nothing else drawn on top -->
   <div id="landing">
-
-    <div class="hero">
-      <div class="hero-eyebrow">It's</div>
-      <div class="hero-title">Sticker<br>Time</div>
+    <img id="landing-bg" src="bg-home.png" alt="">
+    <button id="start-btn" aria-label="Start Camera">
+      <img src="btn-bubble.png" alt="Start Camera">
+    </button>
+    <div class="disclaimer">
+      DISCLAIMER: We only use your camera for sticker recognition.<br>No data is stored or uploaded.
     </div>
-
-    <div class="instructions">
-      <div class="scan-icon">
-        <div class="scan-inner"></div>
-      </div>
-      <p>Point your camera at the sticker and watch it come to life ✨</p>
-    </div>
-
-    <div class="bottom-area">
-      <button id="start-btn" aria-label="Start camera">
-        <img src="btn-bubble.png" alt="">
-        <span class="btn-label">Start Camera</span>
-      </button>
-      <div class="disclaimer">
-        DISCLAIMER: We only use your camera for sticker recognition.<br>No data is stored or uploaded.
-      </div>
-    </div>
-
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════════
-       LOADING SCREEN
-  ════════════════════════════════════════════════════════════════════ -->
+  <!-- LOADING -->
   <div id="loader">
     <div class="loader-spinner"></div>
-    <div class="loader-text">Loading AR…</div>
+    <div class="loader-text">Starting camera…</div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════════
-       BACK BUTTON (shown during AR)
-  ════════════════════════════════════════════════════════════════════ -->
-  <button id="back-btn" aria-label="Go back">← Back</button>
+  <!-- BACK BUTTON -->
+  <button id="back-btn">← Back</button>
 
-  <!-- ══════════════════════════════════════════════════════════════════
-       SCAN HINT
-  ════════════════════════════════════════════════════════════════════ -->
+  <!-- SCAN HINT -->
   <div id="scan-hint">📷 Point at your sticker to play</div>
 
-  <!-- ══════════════════════════════════════════════════════════════════
-       AR SCENE WRAPPER (hidden until user taps Start)
-  ════════════════════════════════════════════════════════════════════ -->
+  <!-- AR SCENE — hidden until user taps, autoStart:false -->
   <div id="ar-wrapper">
     <a-scene
       id="ar-scene"
@@ -374,8 +204,7 @@
       embedded>
 
       <a-assets>
-        <video
-          id="sticker-video"
+        <video id="sticker-video"
           src="bhaw.mp4"
           preload="auto"
           loop
@@ -389,10 +218,8 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0" id="target-entity">
-        <a-video
-          src="#sticker-video"
-          width="1"
-          height="1"
+        <a-video src="#sticker-video"
+          width="1" height="1"
           position="0 0 0.001"
           rotation="0 0 0">
         </a-video>
@@ -401,84 +228,75 @@
     </a-scene>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════════
-       JAVASCRIPT
-  ════════════════════════════════════════════════════════════════════ -->
   <script>
-    const landing    = document.getElementById('landing');
-    const loader     = document.getElementById('loader');
-    const arWrapper  = document.getElementById('ar-wrapper');
-    const backBtn    = document.getElementById('back-btn');
-    const scanHint   = document.getElementById('scan-hint');
-    const startBtn   = document.getElementById('start-btn');
-    const arScene    = document.getElementById('ar-scene');
-    const video      = document.getElementById('sticker-video');
+    const landing      = document.getElementById('landing');
+    const loader       = document.getElementById('loader');
+    const arWrapper    = document.getElementById('ar-wrapper');
+    const backBtn      = document.getElementById('back-btn');
+    const scanHint     = document.getElementById('scan-hint');
+    const startBtn     = document.getElementById('start-btn');
+    const arScene      = document.getElementById('ar-scene');
+    const video        = document.getElementById('sticker-video');
     const targetEntity = document.getElementById('target-entity');
 
-    let arStarted = false;
-
-    // ── Start camera flow (triggered by user gesture — required by iOS) ──
     startBtn.addEventListener('click', () => {
-      // 1. Hide landing, show loader
+      // Hide landing, show loader
       landing.style.display = 'none';
       loader.classList.add('active');
 
-      // 2. Show AR wrapper (must be in DOM and visible before MindAR starts)
+      // Show AR wrapper so the scene is mounted in the DOM
       arWrapper.classList.add('active');
 
-      // 3. Wait one tick for DOM update, then start MindAR
-      setTimeout(() => {
-        try {
-          const mindARSystem = arScene.systems['mindar-image-system'];
-          if (mindARSystem) {
-            mindARSystem.start();
-          }
-        } catch(e) {
-          console.error('MindAR start error:', e);
+      // Wait for A-Frame to finish setting up the scene, then call MindAR start
+      // 'loaded' fires when A-Frame entity graph is ready
+      arScene.addEventListener('loaded', () => {
+        const mindarSystem = arScene.systems && arScene.systems['mindar-image-system'];
+        if (mindarSystem) {
+          mindarSystem.start(); // This is what actually requests camera permission
+        } else {
+          console.error('MindAR system not found');
+          loader.classList.remove('active');
         }
+      }, { once: true });
 
-        // 4. Listen for the scene to be fully ready
-        arScene.addEventListener('arReady', () => {
+      // Listen for AR ready (camera stream + target engine up)
+      arScene.addEventListener('arReady', () => {
+        loader.classList.remove('active');
+        backBtn.classList.add('active');
+        scanHint.classList.add('active');
+      }, { once: true });
+
+      // Fallback: hide loader after 10s no matter what
+      setTimeout(() => {
+        if (loader.classList.contains('active')) {
           loader.classList.remove('active');
           backBtn.classList.add('active');
           scanHint.classList.add('active');
-          arStarted = true;
-        }, { once: true });
-
-        // Fallback: if arReady doesn't fire in 8s, hide loader anyway
-        setTimeout(() => {
-          if (loader.classList.contains('active')) {
-            loader.classList.remove('active');
-            backBtn.classList.add('active');
-            scanHint.classList.add('active');
-          }
-        }, 8000);
-
-      }, 100);
+        }
+      }, 10000);
     });
 
-    // ── Target found: play video ──
+    // Video plays when sticker is detected
     targetEntity.addEventListener('targetFound', () => {
       scanHint.classList.remove('active');
       video.muted = false;
       video.play().catch(() => {
-        // If unmuted play fails (autoplay policy), retry muted
         video.muted = true;
-        video.play().catch(err => console.warn('Video play failed:', err));
+        video.play().catch(e => console.warn('Play failed:', e));
       });
     });
 
-    // ── Target lost: pause video ──
+    // Video pauses when sticker leaves frame
     targetEntity.addEventListener('targetLost', () => {
       video.pause();
       scanHint.classList.add('active');
     });
 
-    // ── Back button: stop AR and return to landing ──
+    // Back button
     backBtn.addEventListener('click', () => {
       try {
-        const mindARSystem = arScene.systems['mindar-image-system'];
-        if (mindARSystem) mindARSystem.stop();
+        const mindarSystem = arScene.systems['mindar-image-system'];
+        if (mindarSystem) mindarSystem.stop();
       } catch(e) {}
 
       video.pause();
@@ -488,9 +306,7 @@
       backBtn.classList.remove('active');
       scanHint.classList.remove('active');
       loader.classList.remove('active');
-
       landing.style.display = 'flex';
-      arStarted = false;
     });
   </script>
 </body>
