@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="background:#000; display:flex; align-items:center; justify-content:center; height:100vh;">
+  <button onclick="startCam()" style="padding:20px 40px; font-size:1.2rem; border-radius:20px;">
+    TAP TO TEST CAMERA
+  </button>
+  <video id="v" autoplay playsinline style="position:fixed;inset:0;width:100%;height:100%;object-fit:cover;display:none;"></video>
+  <script>
+    function startCam() {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(stream => {
+          document.getElementById('v').srcObject = stream;
+          document.getElementById('v').style.display = 'block';
+        })
+        .catch(err => alert('Error: ' + err.message));
+    }
+  </script>
+</body>
+</html>
