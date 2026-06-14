@@ -95,7 +95,7 @@
              vr-mode-ui="enabled: false" 
              device-orientation-permission-ui="enabled: false">
       <a-assets>
-        <video id="bhaw-vid" src="bhaw.mp4" loop="true" playsinline crossorigin="anonymous" webkit-playsinline></video>
+        <video id="bhaw-vid" src="bhaw.mp4" loop="true" playsinline crossorigin="anonymous" webkit-playsinline muted></video>
       </a-assets>
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
       <a-entity mindar-image-target="targetIndex: 0" id="sticker-target">
@@ -115,14 +115,13 @@
         arStatus.style.color = color || '#00ff00';
       }
 
+      video.muted = true;
       video.pause();
 
-      // ── MAGICAL CLICK SOUND ──
       function playMagicClick() {
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
           
-          // Layer 1: sparkle sweep up
           const osc1 = ctx.createOscillator();
           const gain1 = ctx.createGain();
           osc1.connect(gain1);
@@ -135,7 +134,6 @@
           osc1.start(ctx.currentTime);
           osc1.stop(ctx.currentTime + 0.2);
 
-          // Layer 2: shimmer
           const osc2 = ctx.createOscillator();
           const gain2 = ctx.createGain();
           osc2.connect(gain2);
@@ -173,11 +171,13 @@
 
       targetEntity.addEventListener("targetFound", () => {
         log('🎉 Sticker found — playing!', '#00ff00');
+        video.muted = false;
         video.play().catch(e => log('❌ Video error: ' + e.message, '#ff0000'));
       });
 
       targetEntity.addEventListener("targetLost", () => {
         log('🔍 Sticker lost — keep scanning', '#ffdf00');
+        video.muted = true;
         video.pause();
       });
 
