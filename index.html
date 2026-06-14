@@ -22,37 +22,78 @@
         top: 0 !important;
         left: 0 !important;
       }
-      .btn-overlay { 
-        position: fixed; 
-        top: 25px; 
-        left: 25px; 
-        z-index: 99999; 
-        background: rgba(0,0,0,0.85); 
-        color: white; 
-        padding: 15px; 
-        border-radius: 8px; 
-        font-family: sans-serif; 
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+
+      /* ── LANDING SCREEN ── */
+      #landing {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        padding-bottom: 15%;
       }
-      .start-btn { 
-        background: #FFDF00; 
-        border: none; 
-        padding: 12px 24px; 
-        font-weight: bold; 
-        border-radius: 5px; 
-        cursor: pointer; 
-        width: 100%; 
-        margin-top: 10px; 
-        font-size: 14px;
+      #landing-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+      }
+      #start-btn {
+        position: relative;
+        z-index: 2;
+        background: none;
+        border: none;
+        padding: 0;
+        width: min(320px, 80vw);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transform: scale(1);
+        transition: transform 0.12s ease;
+      }
+      #start-btn:active {
+        transform: scale(0.9);
+      }
+      #start-btn img {
+        width: 100%;
+        display: block;
+      }
+
+      /* ── STATUS BAR (always visible, top left) ── */
+      #ar-status {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 99999;
+        background: rgba(0,0,0,0.75);
+        color: #00ff00;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-family: system-ui;
+        font-size: 13px;
+        font-weight: bold;
       }
     </style>
   </head>
   <body>
-    <div class="btn-overlay">
-      <div id="status" style="font-weight: bold; font-size: 14px;">1. Tap to Start:</div>
-      <button onclick="armSystem()" class="start-btn">ACTIVATE CAMERA 🔊</button>
+
+    <!-- STATUS BAR: always on screen from the start -->
+    <div id="ar-status">⏳ Loading...</div>
+
+    <!-- ── LANDING SCREEN ── -->
+    <div id="landing">
+      <video id="landing-video" autoplay loop muted playsinline webkit-playsinline>
+        <source src="group1-main.mp4" type="video/mp4">
+      </video>
+      <button id="start-btn" onclick="startAR()">
+        <img src="btn-bubble.png" alt="Start Camera">
+      </button>
     </div>
 
+    <!-- ── AR SCENE ── -->
     <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 1000;" 
              embedded 
              vr-mode-ui="enabled: false" 
@@ -67,34 +108,47 @@
     </a-scene>
 
     <script>
-      const video = document.getElementById('bhaw-vid');
-      const statusText = document.getElementById('status');
-      const sceneEl = document.querySelector('a-scene');
+      const video     = document.getElementById('bhaw-vid');
+      const landing   = document.getElementById('landing');
+      const arStatus  = document.getElementById('ar-status');
+      const sceneEl   = document.querySelector('a-scene');
+
+      function log(msg, color) {
+        arStatus.textContent = msg;
+        arStatus.style.color = color || '#00ff00';
+      }
+
+      log('✅ Page loaded — tap to start', '#ffffff');
       video.pause();
 
-      function armSystem() {
-        video.play().then(() => { 
-          video.pause(); 
-          statusText.innerText = "2. Scanner Active! Scan Sticker.";
-          statusText.style.color = "#00ff00";
-          sceneEl.systems["mindar-image-system"].start();
-        }).catch(err => {
-          console.log("Hardware activation failed:", err);
-        });
+      function startAR() {
+        log('⏳ Starting camera...', '#ffdf00');
+        setTimeout(() => {
+          landing.style.display = 'none';
+          video.play().then(() => {
+            video.pause();
+            log('📷 Scanner active — scan sticker!', '#00ff00');
+            sceneEl.systems["mindar-image-system"].start();
+          }).catch(err => {
+            log('❌ ERROR: ' + err.message, '#ff0000');
+          });
+        }, 150);
       }
 
       const targetEntity = document.getElementById('sticker-target');
-      
-      targetEntity.addEventListener("targetFound", event => {
-        statusText.innerText = "STICKER MATCHED! 🎉";
-        statusText.style.color = "#00ff00";
-        video.play().catch(e => console.log("Video block:", e));
+
+      targetEntity.addEventListener("targetFound", () => {
+        log('🎉 Sticker found — playing!', '#00ff00');
+        video.play().catch(e => log('❌ Video error: ' + e.message, '#ff0000'));
       });
 
-      targetEntity.addEventListener("targetLost", event => {
-        statusText.innerText = "Scanning for Sticker...";
-        statusText.style.color = "#ffdf00";
+      targetEntity.addEventListener("targetLost", () => {
+        log('🔍 Sticker lost — keep scanning', '#ffdf00');
         video.pause();
+      });
+
+      window.addEventListener('error', function(e) {
+        log('❌ JS ERROR: ' + e.message, '#ff0000');
       });
     </script>
   </body>
