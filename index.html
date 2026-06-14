@@ -23,7 +23,6 @@
         left: 0 !important;
       }
 
-      /* ── LANDING SCREEN ── */
       #landing {
         position: fixed;
         inset: 0;
@@ -62,7 +61,6 @@
         display: block;
       }
 
-      /* ── STATUS BAR (always visible, top left) ── */
       #ar-status {
         position: fixed;
         top: 20px;
@@ -75,15 +73,14 @@
         font-family: system-ui;
         font-size: 13px;
         font-weight: bold;
+        display: none;
       }
     </style>
   </head>
   <body>
 
-    <!-- STATUS BAR: always on screen from the start -->
     <div id="ar-status">⏳ Loading...</div>
 
-    <!-- ── LANDING SCREEN ── -->
     <div id="landing">
       <video id="landing-video" autoplay loop muted playsinline webkit-playsinline>
         <source src="group1-main.mp4" type="video/mp4">
@@ -93,7 +90,6 @@
       </button>
     </div>
 
-    <!-- ── AR SCENE ── -->
     <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 1000;" 
              embedded 
              vr-mode-ui="enabled: false" 
@@ -114,11 +110,11 @@
       const sceneEl   = document.querySelector('a-scene');
 
       function log(msg, color) {
+        arStatus.style.display = 'block';
         arStatus.textContent = msg;
         arStatus.style.color = color || '#00ff00';
       }
 
-      log('✅ Page loaded — tap to start', '#ffffff');
       video.pause();
 
       function startAR() {
