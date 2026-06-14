@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Default Baseline Test</title>
+  <title>V1 Clone Baseline Test</title>
 
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.1.4/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    /* Absolute reset to let the browser video feed lay perfectly under A-Frame */
+    /* Reset layout limits to ensure the camera feed fits perfectly */
     body, html {
       margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000;
     }
@@ -40,14 +40,14 @@
       const stickerVid = document.getElementById('sticker-video');
       const targetHandler = document.getElementById('target-handler');
 
-      // Unmute and play when target sticker is matched
+      // Unmute and play immediately when target sticker is detected
       targetHandler.addEventListener("targetFound", () => {
         console.log("Target found!");
         stickerVid.muted = false;
-        stickerVid.play().catch(err => console.log("Playback interaction lag handler:", err));
+        stickerVid.play().catch(err => console.log("Video playback error:", err));
       });
 
-      // Pause when tracking target leaves field of view
+      // Pause when the sticker moves out of camera sight
       targetHandler.addEventListener("targetLost", () => {
         console.log("Target lost.");
         stickerVid.pause();
