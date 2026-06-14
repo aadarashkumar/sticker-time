@@ -10,51 +10,83 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { width: 100vw; height: 100vh; overflow: hidden; background: #000; }
     #container { width: 100%; height: 100%; }
+    #status {
+      position: fixed;
+      top: 20px; left: 0; right: 0;
+      text-align: center;
+      color: #fff;
+      font-size: 1.1rem;
+      font-family: system-ui;
+      z-index: 999;
+      padding: 10px;
+      background: rgba(0,0,0,0.6);
+    }
   </style>
 </head>
 <body>
+  <div id="status">Step 1: Page loaded</div>
   <div id="container"></div>
 
   <script>
-    const mindarThree = new MINDAR.IMAGE.MindARThree({
-      container: document.getElementById('container'),
-      imageTargetSrc: 'targets.mind',
-    });
+    const status = document.getElementById('status');
 
-    const { renderer, scene, camera } = mindarThree;
+    function log(msg) {
+      status.textContent = msg;
+      console.log(msg);
+    }
 
-    const video = document.createElement('video');
-    video.src = 'bhaw.mp4';
-    video.loop = true;
-    video.muted = true;
-    video.setAttribute('playsinline', '');
-    video.setAttribute('webkit-playsinline', '');
-    video.preload = 'auto';
+    try {
+      log('Step 2: Creating MindAR...');
 
-    const texture = new THREE.VideoTexture(video);
-    const geometry = new THREE.PlaneGeometry(1, 1);
-    const material = new THREE.MeshBasicMaterial({ map: texture });
-    const plane = new THREE.Mesh(geometry, material);
-
-    const anchor = mindarThree.addAnchor(0);
-    anchor.group.add(plane);
-
-    anchor.onTargetFound = () => {
-      video.muted = false;
-      video.play();
-    };
-
-    anchor.onTargetLost = () => {
-      video.pause();
-    };
-
-    mindarThree.start().then(() => {
-      renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera);
+      const mindarThree = new MINDAR.IMAGE.MindARThree({
+        container: document.getElementById('container'),
+        imageTargetSrc: 'targets.mind',
       });
-    }).catch(err => {
-      document.body.innerHTML = '<p style="color:white;padding:20px;font-size:1.2rem;">Error: ' + err + '</p>';
-    });
+
+      log('Step 3: MindAR created, setting up scene...');
+
+      const { renderer, scene, camera } = mindarThree;
+
+      const video = document.createElement('video');
+      video.src = 'bhaw.mp4';
+      video.loop = true;
+      video.muted = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+
+      const texture = new THREE.VideoTexture(video);
+      const geometry = new THREE.PlaneGeometry(1, 1);
+      const material = new THREE.MeshBasicMaterial({ map: texture });
+      const plane = new THREE.Mesh(geometry, material);
+
+      const anchor = mindarThree.addAnchor(0);
+      anchor.group.add(plane);
+
+      anchor.onTargetFound = () => {
+        log('TARGET FOUND!');
+        video.muted = false;
+        video.play();
+      };
+
+      anchor.onTargetLost = () => {
+        log('Target lost');
+        video.pause();
+      };
+
+      log('Step 4: Calling mindarThree.start()...');
+
+      mindarThree.start().then(() => {
+        log('Step 5: Started! Point at sticker');
+        renderer.setAnimationLoop(() => {
+          renderer.render(scene, camera);
+        });
+      }).catch(err => {
+        log('ERROR in start: ' + err.message);
+      });
+
+    } catch(err) {
+      log('CATCH ERROR: ' + err.message);
+    }
   </script>
 </body>
 </html>
