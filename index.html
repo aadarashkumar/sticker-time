@@ -104,10 +104,11 @@
     </a-scene>
 
     <script>
-      const video     = document.getElementById('bhaw-vid');
-      const landing   = document.getElementById('landing');
-      const arStatus  = document.getElementById('ar-status');
-      const sceneEl   = document.querySelector('a-scene');
+      const video       = document.getElementById('bhaw-vid');
+      const landing     = document.getElementById('landing');
+      const arStatus    = document.getElementById('ar-status');
+      const landingVideo = document.getElementById('landing-video');
+      const sceneEl     = document.querySelector('a-scene');
 
       function log(msg, color) {
         arStatus.style.display = 'block';
@@ -118,7 +119,12 @@
       video.pause();
 
       function startAR() {
+        // Unmute landing video on tap for sonic feedback
+        landingVideo.muted = false;
+        landingVideo.play();
+
         log('⏳ Starting camera...', '#ffdf00');
+
         setTimeout(() => {
           landing.style.display = 'none';
           video.play().then(() => {
