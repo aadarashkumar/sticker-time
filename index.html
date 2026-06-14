@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>AR Test</title>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/mind-ar@1.2.2/dist/mindar-image.prod.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { width: 100vw; height: 100vh; overflow: hidden; background: #000; }
@@ -23,57 +21,60 @@
   <div id="status">Step 1: Page loaded</div>
   <div id="container"></div>
 
-  <script>
+  <script type="module">
     const status = document.getElementById('status');
     function log(msg) { status.textContent = msg; }
 
     try {
-      log('Step 2: Creating MindAR...');
+      log('Step 2: Importing MindAR...');
 
-      const mindarThree = new MINDAR.IMAGE.MindARThree({
-        container: document.getElementById('container'),
-        imageTargetSrc: 'targets.mind',
-      });
+      import('https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-three.prod.js')
+        .then(module => {
+          log('Step 3: MindAR loaded!');
+          const { MindARThree } = module;
 
-      log('Step 3: Setting up scene...');
-      const { renderer, scene, camera } = mindarThree;
+          const mindarThree = new MindARThree({
+            container: document.getElementById('container'),
+            imageTargetSrc: 'targets.mind',
+          });
 
-      const video = document.createElement('video');
-      video.src = 'bhaw.mp4';
-      video.loop = true;
-      video.muted = true;
-      video.setAttribute('playsinline', '');
-      video.setAttribute('webkit-playsinline', '');
+          log('Step 4: Setting up scene...');
+          const { renderer, scene, camera } = mindarThree;
 
-      const texture = new THREE.VideoTexture(video);
-      const geometry = new THREE.PlaneGeometry(1, 1);
-      const material = new THREE.MeshBasicMaterial({ map: texture });
-      const plane = new THREE.Mesh(geometry, material);
+          const video = document.createElement('video');
+          video.src = 'bhaw.mp4';
+          video.loop = true;
+          video.muted = true;
+          video.setAttribute('playsinline', '');
+          video.setAttribute('webkit-playsinline', '');
 
-      const anchor = mindarThree.addAnchor(0);
-      anchor.group.add(plane);
+          const anchor = mindarThree.addAnchor(0);
 
-      anchor.onTargetFound = () => {
-        log('TARGET FOUND — playing video!');
-        video.muted = false;
-        video.play();
-      };
+          anchor.onTargetFound = () => {
+            log('TARGET FOUND — playing!');
+            video.muted = false;
+            video.play();
+          };
 
-      anchor.onTargetLost = () => {
-        log('Target lost — point at sticker');
-        video.pause();
-      };
+          anchor.onTargetLost = () => {
+            log('Target lost — point at sticker');
+            video.pause();
+          };
 
-      log('Step 4: Starting camera...');
+          log('Step 5: Starting camera...');
 
-      mindarThree.start().then(() => {
-        log('Step 5: Camera running — point at sticker!');
-        renderer.setAnimationLoop(() => {
-          renderer.render(scene, camera);
+          mindarThree.start().then(() => {
+            log('Step 6: Camera running — point at sticker!');
+            renderer.setAnimationLoop(() => {
+              renderer.render(scene, camera);
+            });
+          }).catch(err => {
+            log('START ERROR: ' + err.message);
+          });
+        })
+        .catch(err => {
+          log('IMPORT ERROR: ' + err.message);
         });
-      }).catch(err => {
-        log('ERROR: ' + err.message);
-      });
 
     } catch(err) {
       log('CATCH ERROR: ' + err.message);
