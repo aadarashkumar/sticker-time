@@ -159,13 +159,14 @@
 
         setTimeout(() => {
           landing.style.display = 'none';
-          videos[0].play().then(() => {
-            videos[0].pause();
-            log('📷 Scanner active — scan sticker!', '#00ff00');
-            sceneEl.systems["mindar-image-system"].start();
-          }).catch(err => {
-            log('❌ ERROR: ' + err.message, '#ff0000');
-          });
+          Promise.all(videos.map(v => v.play().then(() => v.pause())))
+  .then(() => {
+    log('📷 Scanner active — scan sticker!', '#00ff00');
+    sceneEl.systems["mindar-image-system"].start();
+  })
+  .catch(err => {
+    log('❌ ERROR: ' + err.message, '#ff0000');
+  });
         }, 150);
       }
 
